@@ -20,10 +20,10 @@ func New(repo user.UserDataInterface) user.UserServiceInterface {
 }
 
 // CreateUser implements user.UserServiceInterface.
-func (s *UserService) CreateUser(inputUser user.CoreUser) (uint, error) {
+func (s *UserService) Create(inputUser user.CoreUser) (uint, error) {
 	errValidate := s.validate.Struct(inputUser)
 	if errValidate != nil {
-		return 0, errors.New("validation error" + errValidate.Error())
+		return 0, errors.New("validation error, " + errValidate.Error())
 	}
 	userID, err := s.userRepo.Insert(inputUser)
 	if err != nil {
@@ -34,28 +34,42 @@ func (s *UserService) CreateUser(inputUser user.CoreUser) (uint, error) {
 }
 
 // GetAllUser implements user.UserServiceInterface.
-func (s *UserService) GetAllUser() ([]user.CoreUser, error) {
+func (s *UserService) GetAll() ([]user.CoreUser, error) {
 	result, err := s.userRepo.SelectAll()
-	return result, err
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // GetUserById implements user.UserServiceInterface.
-func (s *UserService) GetUserById(userId uint) (user.CoreUser, error) {
+func (s *UserService) GetById(userId uint) (user.CoreUser, error) {
 	result, err := s.userRepo.Select(userId)
-	return result, err
+	if err != nil {
+		return user.CoreUser{}, err
+	}
+	return result, nil
+}
+
+// UpdateUserById implements user.UserServiceInterface.
+func (s *UserService) UpdateById(userId uint, userData user.CoreUser) error {
+	err := s.userRepo.Update(userId, userData)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // DeleteUserById implements user.UserServiceInterface.
-func (*UserService) DeleteUserById(userId uint) error {
-	panic("unimplemented")
+func (s *UserService) DeleteById(userId uint) error {
+	err := s.userRepo.Delete(userId)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Login implements user.UserServiceInterface.
 func (*UserService) Login(email string, password string) (dataLogin user.CoreUser, token string, err error) {
-	panic("unimplemented")
-}
-
-// UpdateUserById implements user.UserServiceInterface.
-func (*UserService) UpdateUserById(userId uint, updateData user.CoreUser) error {
 	panic("unimplemented")
 }

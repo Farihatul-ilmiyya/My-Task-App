@@ -15,7 +15,7 @@ type UserRequest struct {
 }
 
 // Mapping dari struct requet to struct core
-func ReqToCoreUser(req UserRequest) user.CoreUser {
+func MapReqToCoreUser(req UserRequest) user.CoreUser {
 	return user.CoreUser{
 		Name:        req.Name,
 		Email:       req.Email,

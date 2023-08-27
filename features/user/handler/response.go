@@ -6,11 +6,11 @@ import (
 )
 
 type UserResponse struct {
-	Name        string    `json:"name" form:"name"`
-	Email       string    `json:"email" form:"email"`
-	Password    string    `json:"password" form:"password"`
-	PhoneNumber string    `json:"phone_number" form:"phone_number"`
-	CreatedAt   time.Time `json:"created_at" form:"created_at"`
+	Name        string    `json:"name"`
+	Email       string    `json:"email"`
+	Password    string    `json:"password"`
+	PhoneNumber string    `json:"phone_number"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 // mapping from userCore to UserResponse

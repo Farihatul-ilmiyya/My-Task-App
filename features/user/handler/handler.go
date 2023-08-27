@@ -4,6 +4,7 @@ import (
 	"mia/my_task_app/features/user"
 	"mia/my_task_app/helpers"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -28,13 +29,13 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "error bind data", nil))
 	}
 	//mapping dari struct request to struct core
-	input := ReqToCoreUser(*NewUser)
-	_, err = h.userService.CreateUser(input)
+	input := MapReqToCoreUser(*NewUser)
+	_, err = h.userService.Create(input)
 	if err != nil {
 		if strings.Contains(err.Error(), "validation") {
 			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, err.Error(), nil))
 		} else {
-			return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error insert data", nil))
+			return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error insert data, "+err.Error(), nil))
 
 		}
 	}
@@ -42,13 +43,80 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 }
 
 func (h *UserHandler) GetAllUser(c echo.Context) error {
-	result, err := h.userService.GetAllUser()
+	result, err := h.userService.GetAll()
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error read data", nil))
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error read data, "+err.Error(), nil))
 	}
 	var usersResponse []UserResponse
 	for _, v := range result {
 		usersResponse = append(usersResponse, MapCoreUserToRes(v))
 	}
-	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusCreated, "success read data", usersResponse))
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusFound, "success read data", usersResponse))
+}
+
+func (h *UserHandler) GetUserById(c echo.Context) error {
+	idParam := c.Param("user_id")
+	idConv, err := strconv.Atoi(idParam)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "user id is not valid", nil))
+	}
+
+	result, err := h.userService.GetById(uint(idConv))
+	if err != nil {
+		if strings.Contains(err.Error(), "validation") {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, err.Error(), nil))
+		} else {
+			return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error read data, "+err.Error(), nil))
+		}
+	}
+
+	resultResponse := UserResponse{
+		Name:        result.Name,
+		Email:       result.Email,
+		Password:    result.Password,
+		PhoneNumber: result.PhoneNumber,
+		CreatedAt:   result.CreatedAt,
+	}
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusFound, "success read data", resultResponse))
+}
+
+func (h *UserHandler) UpdateUserById(c echo.Context) error {
+	idParam := c.Param("user_id")
+	idConv, err := strconv.Atoi(idParam)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "user id is not valid", nil))
+	}
+	userInput := UserRequest{}
+	errBind := c.Bind(&userInput)
+	if errBind != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "error bind data", nil))
+	}
+	//Mapping user reques to core user
+	Core := MapReqToCoreUser(userInput)
+	err = h.userService.UpdateById(uint(idConv), Core)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error update data, "+err.Error(), nil))
+	}
+
+	// Get user data for response
+	user, err := h.userService.GetById(uint(idConv))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "user not found", nil))
+	}
+	resultResponse := MapCoreUserToRes(user)
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "user updated successfully", resultResponse))
+}
+
+func (h *UserHandler) DeleteUserById(c echo.Context) error {
+	idParam := c.Param("user_id")
+	idConv, err := strconv.Atoi(idParam)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "user id is not valid", nil))
+	}
+
+	err = h.userService.DeleteById(uint(idConv))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error delete data, "+err.Error(), nil))
+	}
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusOK, "success delete user", nil))
 }

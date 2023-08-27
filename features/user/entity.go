@@ -18,15 +18,15 @@ type UserDataInterface interface {
 	Insert(inputUser CoreUser) (uint, error)
 	SelectAll() ([]CoreUser, error)
 	Select(userId uint) (CoreUser, error)
-	Update(userId uint, updateData CoreUser) error
+	Update(userId uint, userData CoreUser) error
 	Delete(userId uint) error
 }
 
 type UserServiceInterface interface {
 	Login(email string, password string) (dataLogin CoreUser, token string, err error)
-	CreateUser(inputUser CoreUser) (uint, error)
-	GetAllUser() ([]CoreUser, error)
-	GetUserById(userId uint) (CoreUser, error)
-	UpdateUserById(userId uint, updateData CoreUser) error
-	DeleteUserById(userId uint) error
+	Create(inputUser CoreUser) (uint, error)
+	GetAll() ([]CoreUser, error)
+	GetById(userId uint) (CoreUser, error)
+	UpdateById(userId uint, userData CoreUser) error
+	DeleteById(userId uint) error
 }
