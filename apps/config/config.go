@@ -8,12 +8,17 @@ import (
 	"github.com/spf13/viper"
 )
 
+// var (
+// 	JWT_SECRET = ""
+// )
+
 type AppConfig struct {
 	DB_USERNAME string
 	DB_PASSWORD string
 	DB_HOSTNAME string
 	DB_PORT     int
 	DB_NAME     string
+	JWT_SECRET  string
 }
 
 func InitConfig() *AppConfig {
@@ -23,7 +28,10 @@ func InitConfig() *AppConfig {
 func ReadEnv() *AppConfig {
 	app := AppConfig{}
 	isRead := true
-
+	if val, found := os.LookupEnv("JWT_KEY"); found {
+		app.JWT_SECRET = val
+		isRead = false
+	}
 	if val, found := os.LookupEnv("DBUSER"); found {
 		app.DB_USERNAME = val
 		isRead = false
@@ -61,6 +69,7 @@ func ReadEnv() *AppConfig {
 		app.DB_HOSTNAME = viper.Get("DBHOST").(string)
 		app.DB_PORT, _ = strconv.Atoi(viper.Get("DBPORT").(string))
 		app.DB_NAME = viper.Get("DBNAME").(string)
+		app.JWT_SECRET = viper.Get("JWT_KEY").(string)
 	}
 	return &app
 }

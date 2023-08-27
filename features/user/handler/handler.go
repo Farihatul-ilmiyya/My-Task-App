@@ -20,6 +20,26 @@ func New(service user.UserServiceInterface) *UserHandler {
 	}
 }
 
+func (h *UserHandler) Login(c echo.Context) error {
+	userInput := new(LoginRequest)
+	err := c.Bind(&userInput)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "error bind data", nil))
+	}
+
+	dataLogin, token, err := h.userService.Login(userInput.Email, userInput.Password)
+	if err != nil {
+		if strings.Contains(err.Error(), "login failed") {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, err.Error(), nil))
+		} else if strings.Contains(err.Error(), "validation") {
+			return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, err.Error(), nil))
+		} else {
+			return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error login", nil))
+		}
+	}
+	response := MapCoreUserToLogRes(dataLogin, token)
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusFound, "login successful", response))
+}
 func (h *UserHandler) CreateUser(c echo.Context) error {
 	NewUser := new(UserRequest)
 

@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"mia/my_task_app/apps/middlewares"
 	"mia/my_task_app/features/user"
 
 	"github.com/go-playground/validator/v10"
@@ -17,6 +18,26 @@ func New(repo user.UserDataInterface) user.UserServiceInterface {
 		userRepo: repo,
 		validate: validator.New(),
 	}
+}
+
+// Login implements user.UserServiceInterface.
+func (s *UserService) Login(email string, password string) (user.CoreUser, string, error) {
+	if email == "" {
+		return user.CoreUser{}, "", errors.New("email is required")
+	} else if password == "" {
+		return user.CoreUser{}, "", errors.New("password is required")
+	}
+
+	dataLogin, token, err := s.userRepo.Login(email, password)
+	if err != nil {
+		return user.CoreUser{}, "", err
+	}
+
+	token, err = middlewares.CreateToken(uint64(dataLogin.ID))
+	if err != nil {
+		return user.CoreUser{}, "", err
+	}
+	return dataLogin, token, nil
 }
 
 // CreateUser implements user.UserServiceInterface.
@@ -67,9 +88,4 @@ func (s *UserService) DeleteById(userId uint) error {
 		return err
 	}
 	return nil
-}
-
-// Login implements user.UserServiceInterface.
-func (*UserService) Login(email string, password string) (dataLogin user.CoreUser, token string, err error) {
-	panic("unimplemented")
 }

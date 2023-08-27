@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+type LoginResponse struct {
+	Id    uint   `json:"id"`
+	Email string `json:"email"`
+	Token string `json:"token"`
+	// Role  string `json:"role"`
+}
 type UserResponse struct {
 	Name        string    `json:"name"`
 	Email       string    `json:"email"`
@@ -23,4 +29,13 @@ func MapCoreUserToRes(Core user.CoreUser) UserResponse {
 		CreatedAt:   Core.CreatedAt,
 	}
 
+}
+
+// mapping from userCore to LoginResponse
+func MapCoreUserToLogRes(Core user.CoreUser, jwtToken string) LoginResponse {
+	return LoginResponse{
+		Id:    Core.ID,
+		Email: Core.Email,
+		Token: jwtToken,
+	}
 }

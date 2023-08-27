@@ -14,7 +14,7 @@ type CoreUser struct {
 }
 
 type UserDataInterface interface {
-	Login(email string, password string) (dataLogin CoreUser, string, err error)
+	Login(email string, password string) (CoreUser, string, error)
 	Insert(inputUser CoreUser) (uint, error)
 	SelectAll() ([]CoreUser, error)
 	Select(userId uint) (CoreUser, error)
@@ -23,7 +23,7 @@ type UserDataInterface interface {
 }
 
 type UserServiceInterface interface {
-	Login(email string, password string) (dataLogin CoreUser, token string, err error)
+	Login(email string, password string) (CoreUser, string, error)
 	Create(inputUser CoreUser) (uint, error)
 	GetAll() ([]CoreUser, error)
 	GetById(userId uint) (CoreUser, error)
