@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"mia/my_task_app/apps/middlewares"
 	"mia/my_task_app/features/user"
 	"mia/my_task_app/helpers"
 	"net/http"
@@ -38,7 +39,7 @@ func (h *UserHandler) Login(c echo.Context) error {
 		}
 	}
 	response := MapCoreUserToLogRes(dataLogin, token)
-	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusFound, "login successful", response))
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusFound, "login successfully", response))
 }
 func (h *UserHandler) CreateUser(c echo.Context) error {
 	NewUser := new(UserRequest)
@@ -80,7 +81,13 @@ func (h *UserHandler) GetUserById(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "user id is not valid", nil))
 	}
+	// Mengambil ID pengguna dari token JWT yang terkait dengan permintaan
+	userID := middlewares.ExtractTokenUserId(c)
 
+	// Memeriksa apakah ID pengguna yang diambil dari token sama dengan ID yang diminta
+	if uint(idConv) != userID {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, "not authorized to access this user's data", nil))
+	}
 	result, err := h.userService.GetById(uint(idConv))
 	if err != nil {
 		if strings.Contains(err.Error(), "validation") {
@@ -105,6 +112,12 @@ func (h *UserHandler) UpdateUserById(c echo.Context) error {
 	idConv, err := strconv.Atoi(idParam)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "user id is not valid", nil))
+	}
+	userID := middlewares.ExtractTokenUserId(c)
+
+	// Memeriksa apakah ID pengguna yang diambil dari token sama dengan ID yang diminta
+	if uint(idConv) != userID {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, "not authorized to access this user's data", nil))
 	}
 	userInput := UserRequest{}
 	errBind := c.Bind(&userInput)
@@ -133,7 +146,12 @@ func (h *UserHandler) DeleteUserById(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "user id is not valid", nil))
 	}
+	userID := middlewares.ExtractTokenUserId(c)
 
+	// Memeriksa apakah ID pengguna yang diambil dari token sama dengan ID yang diminta
+	if uint(idConv) != userID {
+		return c.JSON(http.StatusUnauthorized, helpers.WebResponse(http.StatusUnauthorized, "not authorized to access this user's data", nil))
+	}
 	err = h.userService.DeleteById(uint(idConv))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error delete data, "+err.Error(), nil))

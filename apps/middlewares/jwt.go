@@ -18,7 +18,7 @@ func JWTMiddleware() echo.MiddlewareFunc {
 	})
 }
 
-func CreateToken(userId uint64 /*, userRole string*/) (string, error) {
+func CreateToken(userId uint /*, userRole string*/) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["userId"] = userId
@@ -29,12 +29,12 @@ func CreateToken(userId uint64 /*, userRole string*/) (string, error) {
 
 }
 
-func ExtractTokenUserId(e echo.Context) uint64 {
+func ExtractTokenUserId(e echo.Context) uint {
 	user := e.Get("user").(*jwt.Token)
 	if user.Valid {
 		claims := user.Claims.(jwt.MapClaims)
-		userId := claims["userId"].(uint64)
-		return userId
+		userId := claims["userId"].(float64)
+		return uint(userId)
 	}
 	return 0
 }

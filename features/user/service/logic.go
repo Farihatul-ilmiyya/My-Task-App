@@ -6,6 +6,7 @@ import (
 	"mia/my_task_app/features/user"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/labstack/gommon/log"
 )
 
 type UserService struct {
@@ -30,11 +31,13 @@ func (s *UserService) Login(email string, password string) (user.CoreUser, strin
 
 	dataLogin, token, err := s.userRepo.Login(email, password)
 	if err != nil {
+		log.Error("Service error:", err)
 		return user.CoreUser{}, "", err
 	}
 
-	token, err = middlewares.CreateToken(uint64(dataLogin.ID))
+	token, err = middlewares.CreateToken(dataLogin.ID)
 	if err != nil {
+		log.Error("Create token error:", err)
 		return user.CoreUser{}, "", err
 	}
 	return dataLogin, token, nil

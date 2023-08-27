@@ -5,6 +5,7 @@ import (
 	"mia/my_task_app/features/user"
 	"mia/my_task_app/helpers"
 
+	"github.com/labstack/gommon/log"
 	"gorm.io/gorm"
 )
 
@@ -21,8 +22,9 @@ func New(database *gorm.DB) user.UserDataInterface {
 // Login implements user.UserDataInterface.
 func (r *userQuery) Login(email string, password string) (user.CoreUser, string, error) {
 	var dataUser User
-	tx := r.db.Where("email = ?").First(&dataUser)
+	tx := r.db.Where("email = ?", email).First(&dataUser)
 	if tx.Error != nil {
+		log.Error("Database error:", tx.Error)
 		return user.CoreUser{}, "", errors.New(tx.Error.Error() + ", invalid email")
 	}
 	if tx.RowsAffected == 0 {
