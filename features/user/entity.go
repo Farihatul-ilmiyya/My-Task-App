@@ -1,6 +1,9 @@
 package user
 
-import "time"
+import (
+	"mia/my_task_app/features/project"
+	"time"
+)
 
 type CoreUser struct {
 	ID          uint
@@ -11,10 +14,11 @@ type CoreUser struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   time.Time
+	Projects    []project.CoreProject `gorm:"foreignKey:UserID"`
 }
 
 type UserDataInterface interface {
-	Login(email string, password string) (CoreUser, string, error)
+	Login(email string) (CoreUser, error)
 	Insert(inputUser CoreUser) (uint, error)
 	SelectAll() ([]CoreUser, error)
 	Select(userId uint) (CoreUser, error)

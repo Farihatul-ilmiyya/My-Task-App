@@ -4,6 +4,7 @@ import (
 	"errors"
 	"mia/my_task_app/apps/middlewares"
 	"mia/my_task_app/features/user"
+	"mia/my_task_app/helpers"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/gommon/log"
@@ -29,13 +30,16 @@ func (s *UserService) Login(email string, password string) (user.CoreUser, strin
 		return user.CoreUser{}, "", errors.New("password is required")
 	}
 
-	dataLogin, token, err := s.userRepo.Login(email, password)
+	dataLogin, err := s.userRepo.Login(email)
 	if err != nil {
 		log.Error("Service error:", err)
 		return user.CoreUser{}, "", err
 	}
-
-	token, err = middlewares.CreateToken(dataLogin.ID)
+	checkPassword := helpers.ComparePassword(password, dataLogin.Password)
+	if !checkPassword {
+		return user.CoreUser{}, "", errors.New("login failed, wrong password")
+	}
+	token, err := middlewares.CreateToken(dataLogin.ID)
 	if err != nil {
 		log.Error("Create token error:", err)
 		return user.CoreUser{}, "", err

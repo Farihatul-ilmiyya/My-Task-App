@@ -20,23 +20,19 @@ func New(database *gorm.DB) user.UserDataInterface {
 }
 
 // Login implements user.UserDataInterface.
-func (r *userQuery) Login(email string, password string) (user.CoreUser, string, error) {
+func (r *userQuery) Login(email string) (user.CoreUser, error) {
 	var dataUser User
 	tx := r.db.Where("email = ?", email).First(&dataUser)
 	if tx.Error != nil {
 		log.Error("Database error:", tx.Error)
-		return user.CoreUser{}, "", errors.New(tx.Error.Error() + ", invalid email")
+		return user.CoreUser{}, errors.New(tx.Error.Error() + ", invalid email")
 	}
 	if tx.RowsAffected == 0 {
-		return user.CoreUser{}, "", errors.New("login failed, invalid email")
-	}
-	checkPassword := helpers.ComparePassword(password, dataUser.Password)
-	if !checkPassword {
-		return user.CoreUser{}, "", errors.New("login failed, wrong password")
+		return user.CoreUser{}, errors.New("login failed, invalid email")
 	}
 
 	dataCore := MapUserToCoreUser(dataUser)
-	return dataCore, "", nil
+	return dataCore, nil
 }
 
 // Insert implements user.UserDataInterface.

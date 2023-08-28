@@ -2,6 +2,12 @@ package router
 
 import (
 	"mia/my_task_app/apps/middlewares"
+	_projectRepo "mia/my_task_app/features/project/data"
+	_projectHandler "mia/my_task_app/features/project/handler"
+	_projectService "mia/my_task_app/features/project/service"
+	_taskRepo "mia/my_task_app/features/task/data"
+	_taskHandler "mia/my_task_app/features/task/handler"
+	_taskService "mia/my_task_app/features/task/service"
 	_userRepo "mia/my_task_app/features/user/data"
 	_userHandler "mia/my_task_app/features/user/handler"
 	_userService "mia/my_task_app/features/user/service"
@@ -21,4 +27,22 @@ func InitRouter(db *gorm.DB, e *echo.Echo) {
 	e.GET("/users/:user_id", userHandlerAPI.GetUserById, middlewares.JWTMiddleware())
 	e.PUT("/users/:user_id", userHandlerAPI.UpdateUserById, middlewares.JWTMiddleware())
 	e.DELETE("/users/:user_id", userHandlerAPI.DeleteUserById, middlewares.JWTMiddleware())
+
+	projectRepo := _projectRepo.New(db)
+	projectService := _projectService.New(projectRepo)
+	projectHandlerAPI := _projectHandler.New(projectService)
+	e.POST("/projects", projectHandlerAPI.CreateProject, middlewares.JWTMiddleware())
+	e.GET("/projects", projectHandlerAPI.GetAllProject, middlewares.JWTMiddleware())
+	e.GET("/projects/:project_id", projectHandlerAPI.GetProjectById, middlewares.JWTMiddleware())
+	e.PUT("/projects/:project_id", projectHandlerAPI.UpdateProjectById, middlewares.JWTMiddleware())
+	e.DELETE("/projects/:project_id", projectHandlerAPI.DeleteProjectById, middlewares.JWTMiddleware())
+
+	taskRepo := _taskRepo.New(db)
+	taskService := _taskService.New(taskRepo)
+	taskHandlerAPI := _taskHandler.New(taskService)
+	e.POST("/tasks", taskHandlerAPI.CreateTask, middlewares.JWTMiddleware())
+	e.GET("/tasks", taskHandlerAPI.GetAllTask, middlewares.JWTMiddleware())
+	e.GET("/tasks/:task_id", taskHandlerAPI.GetTaskById, middlewares.JWTMiddleware())
+	e.PUT("/tasks/:task_id", taskHandlerAPI.UpdateTaskById, middlewares.JWTMiddleware())
+	e.DELETE("/tasks/:task_id", taskHandlerAPI.DeleteTaskById, middlewares.JWTMiddleware())
 }

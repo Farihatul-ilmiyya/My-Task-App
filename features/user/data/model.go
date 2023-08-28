@@ -1,6 +1,9 @@
 package data
 
 import (
+	"mia/my_task_app/features/project"
+	"mia/my_task_app/features/project/data"
+	_projectData "mia/my_task_app/features/project/data"
 	"mia/my_task_app/features/user"
 
 	"gorm.io/gorm"
@@ -8,24 +11,34 @@ import (
 
 type User struct {
 	gorm.Model
-	Name        string
-	Email       string `gorm:"unique"`
-	Password    string
-	PhoneNumber string
+	Name        string         `gorm:"column:name;not null"`
+	Email       string         `gorm:"column:name;not null;unique"`
+	Password    string         `gorm:"column:password;not null"`
+	PhoneNumber string         `gorm:"column:phone_number;"`
+	Projects    []data.Project `gorm:"foreignKey:UserID"`
 }
 
-// mapping core to model
+// mapping coreUser to User
 func MapCoreUsertoUser(coreUser user.CoreUser) User {
+	var projects []_projectData.Project
+	for _, coreProject := range coreUser.Projects {
+		projects = append(projects, data.MapCoreProjectToProject(coreProject))
+	}
 	return User{
 		Name:        coreUser.Name,
 		Email:       coreUser.Email,
 		Password:    coreUser.Password,
 		PhoneNumber: coreUser.PhoneNumber,
+		Projects:    projects,
 	}
 }
 
 // Mapping User to CoreUser
 func MapUserToCoreUser(dataModel User) user.CoreUser {
+	var coreProjects []project.CoreProject
+	for _, projectModel := range dataModel.Projects {
+		coreProjects = append(coreProjects, data.MapProjectToCoreProject(projectModel))
+	}
 	return user.CoreUser{
 		ID:          dataModel.ID,
 		Name:        dataModel.Name,
@@ -34,22 +47,16 @@ func MapUserToCoreUser(dataModel User) user.CoreUser {
 		PhoneNumber: dataModel.PhoneNumber,
 		CreatedAt:   dataModel.CreatedAt,
 		UpdatedAt:   dataModel.UpdatedAt,
+		DeletedAt:   dataModel.DeletedAt.Time,
+		Projects:    coreProjects,
 	}
 }
 
 // Mapping dari []User ke []CoreUser
 func ListMapUserToCoreUser(users []User) []user.CoreUser {
 	var coreUsers []user.CoreUser
-	for _, u := range users {
-		coreUser := user.CoreUser{
-			ID:          u.ID,
-			Name:        u.Name,
-			Email:       u.Email,
-			Password:    u.Password,
-			PhoneNumber: u.PhoneNumber,
-			CreatedAt:   u.CreatedAt,
-		}
-		coreUsers = append(coreUsers, coreUser)
+	for _, userModel := range users {
+		coreUsers = append(coreUsers, MapUserToCoreUser(userModel))
 	}
 	return coreUsers
 }
