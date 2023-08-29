@@ -48,9 +48,9 @@ func (r *projectQuery) SelectAll(userID uint) ([]project.CoreProject, error) {
 }
 
 // Select implements project.ProjectDataInterface.
-func (r *projectQuery) Select(projectId uint) (project.CoreProject, error) {
+func (r *projectQuery) Select(projectId uint, userID uint) (project.CoreProject, error) {
 	var projectData Project
-	tx := r.db.First(&projectData, projectId)
+	tx := r.db.Where("id = ? AND user_id = ?", projectId, userID).First(&projectData)
 	if tx.Error != nil {
 		return project.CoreProject{}, tx.Error
 	}
@@ -89,9 +89,9 @@ func (r *projectQuery) Update(projectId uint, userID uint, projectData project.C
 }
 
 // Delete implements project.ProjectDataInterface.
-func (r *projectQuery) Delete(projectId uint) error {
+func (r *projectQuery) Delete(projectId uint, userID uint) error {
 	var project Project
-	tx := r.db.Delete(&project, projectId)
+	tx := r.db.Where("id = ? AND user_id = ?", projectId, userID).Delete(&project)
 	if tx.Error != nil {
 		return tx.Error
 	}

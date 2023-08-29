@@ -35,7 +35,7 @@ func (s *projectService) GetAll(userID uint) ([]project.CoreProject, error) {
 
 // GetById implements project.ProjectServiceInterface.
 func (s *projectService) GetById(projectId uint, userID uint) (project.CoreProject, error) {
-	result, err := s.projectRepo.Select(projectId)
+	result, err := s.projectRepo.Select(projectId, userID)
 	if err != nil {
 		return project.CoreProject{}, err
 	}
@@ -53,7 +53,7 @@ func (s *projectService) UpdateById(projectId uint, userID uint, projectData pro
 
 // DeleteById implements project.ProjectServiceInterface.
 func (s *projectService) DeleteById(projectId uint, userID uint) error {
-	err := s.projectRepo.Delete(projectId)
+	err := s.projectRepo.Delete(projectId, userID)
 	if err != nil {
 		return err
 	}
