@@ -3,7 +3,6 @@ package data
 import (
 	"mia/my_task_app/features/project"
 	"mia/my_task_app/features/task"
-	"mia/my_task_app/features/task/data"
 	_taskData "mia/my_task_app/features/task/data"
 
 	"gorm.io/gorm"
@@ -36,7 +35,7 @@ func MapCoreProjectToProject(core project.CoreProject) Project {
 func MapProjectToCoreProject(model Project) project.CoreProject {
 	var coreTasks []task.CoreTask
 	for _, task := range model.Tasks {
-		coreTasks = append(coreTasks, data.MapTaskToCoreTask(task))
+		coreTasks = append(coreTasks, _taskData.MapTaskToCoreTask(task))
 	}
 	return project.CoreProject{
 		ID:          model.ID,

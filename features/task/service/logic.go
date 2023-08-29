@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"mia/my_task_app/features/task"
 )
 
@@ -15,9 +16,13 @@ func New(repo task.TaskDataInterface) task.TaskServiceInterface {
 }
 
 // CreateTask implements task.TaskServiceInterface.
-func (s *TaskService) Create(inputTask task.CoreTask) (uint, error) {
+func (s *TaskService) Create(inputTask task.CoreTask, userID uint) (uint, error) {
+	// Cek apakah user sudah login atau belum
+	if userID == 0 {
+		return 0, errors.New("user not logged in")
+	}
 
-	taskID, err := s.taskRepo.Insert(inputTask)
+	taskID, err := s.taskRepo.Insert(inputTask, userID)
 	if err != nil {
 		return 0, err
 	}
@@ -26,8 +31,8 @@ func (s *TaskService) Create(inputTask task.CoreTask) (uint, error) {
 }
 
 // GetAllTask implements task.TaskServiceInterface.
-func (s *TaskService) GetAll() ([]task.CoreTask, error) {
-	result, err := s.taskRepo.SelectAll()
+func (s *TaskService) GetAll(userID uint) ([]task.CoreTask, error) {
+	result, err := s.taskRepo.SelectAll(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -35,8 +40,8 @@ func (s *TaskService) GetAll() ([]task.CoreTask, error) {
 }
 
 // GetTaskById implements task.TaskServiceInterface.
-func (s *TaskService) GetById(taskId uint) (task.CoreTask, error) {
-	result, err := s.taskRepo.Select(taskId)
+func (s *TaskService) GetById(taskId uint, userID uint) (task.CoreTask, error) {
+	result, err := s.taskRepo.Select(taskId, userID)
 	if err != nil {
 		return task.CoreTask{}, err
 	}
@@ -44,8 +49,8 @@ func (s *TaskService) GetById(taskId uint) (task.CoreTask, error) {
 }
 
 // UpdateTaskById implements task.TaskServiceInterface.
-func (s *TaskService) UpdateById(taskId uint, taskData task.CoreTask) error {
-	err := s.taskRepo.Update(taskId, taskData)
+func (s *TaskService) UpdateById(taskId uint, userID uint, taskData task.CoreTask) error {
+	err := s.taskRepo.Update(taskId, userID, taskData)
 	if err != nil {
 		return err
 	}
@@ -53,8 +58,8 @@ func (s *TaskService) UpdateById(taskId uint, taskData task.CoreTask) error {
 }
 
 // DeleteTaskById implements task.TaskServiceInterface.
-func (s *TaskService) DeleteById(taskId uint) error {
-	err := s.taskRepo.Delete(taskId)
+func (s *TaskService) DeleteById(taskId uint, userID uint) error {
+	err := s.taskRepo.Delete(taskId, userID)
 	if err != nil {
 		return err
 	}

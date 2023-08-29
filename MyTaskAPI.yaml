@@ -1,0 +1,12 @@
+title: My Task APP
+summary: A todo list app.
+description: This is a sample server for a todo list app.
+termsOfService: https://example.com/terms/
+contact:
+  name: API Support
+  url: https://www.example.com/support
+  email: farihatulilmiyya2625@gmail.com
+license:
+  name: Apache 2.0
+  url: https://www.apache.org/licenses/LICENSE-2.0.html
+version: 1.0.0

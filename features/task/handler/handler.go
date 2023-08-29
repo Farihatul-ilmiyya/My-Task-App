@@ -5,6 +5,7 @@ import (
 	"mia/my_task_app/features/task"
 	"mia/my_task_app/helpers"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -20,9 +21,9 @@ func New(service task.TaskServiceInterface) *taskHandler {
 }
 
 func (h *taskHandler) CreateTask(c echo.Context) error {
-
 	NewTask := new(TaskRequest)
-
+	// Mengambil ID pengguna dari token JWT yang terkait dengan permintaan
+	UserID := middlewares.ExtractTokenUserId(c)
 	//mendapatkan data yang dikirim oleh FE melalui request
 	err := c.Bind(&NewTask)
 	if err != nil {
@@ -31,15 +32,17 @@ func (h *taskHandler) CreateTask(c echo.Context) error {
 
 	//mapping dari request to CoreTask
 	input := MapTaskReqToCoreTask(*NewTask)
-	_, err = h.taskService.Create(input)
+	result, err := h.taskService.Create(input, UserID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error insert data, "+err.Error(), nil))
 	}
-	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusCreated, "success create task", nil))
+	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusCreated, "success create task", result))
 }
 
 func (h *taskHandler) GetAllTask(c echo.Context) error {
-	result, err := h.taskService.GetAll()
+	// Mengambil ID pengguna dari token JWT yang terkait dengan permintaan
+	userID := middlewares.ExtractTokenUserId(c)
+	result, err := h.taskService.GetAll(userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error read data, "+err.Error(), nil))
 	}
@@ -51,24 +54,35 @@ func (h *taskHandler) GetAllTask(c echo.Context) error {
 }
 
 func (h *taskHandler) GetTaskById(c echo.Context) error {
+	idParam := c.Param("task_id")
+	idConv, err := strconv.Atoi(idParam)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "user id is not valid", nil))
+	}
 	// Mengambil ID pengguna dari token JWT yang terkait dengan permintaan
 	userID := middlewares.ExtractTokenUserId(c)
-	result, err := h.taskService.GetById(uint(userID))
+	result, err := h.taskService.GetById(uint(idConv), userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error read data, "+err.Error(), nil))
 	}
 
 	resultResponse := TaskResponse{
-		Title:     result.Title,
-		ProjectID: result.ProjectID,
-		CreatedAt: result.CreatedAt,
+		Title:            result.Title,
+		ProjectID:        result.ProjectID,
+		CompletionStatus: result.CompletionStatus,
+		CreatedAt:        result.CreatedAt,
 	}
 	return c.JSON(http.StatusOK, helpers.WebResponse(http.StatusFound, "success read data", resultResponse))
 }
 
 func (h *taskHandler) UpdateTaskById(c echo.Context) error {
+	idParam := c.Param("task_id")
+	idConv, err := strconv.Atoi(idParam)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "user id is not valid", nil))
+	}
 	// Mengambil ID pengguna dari token JWT yang terkait dengan permintaan
-	userID := middlewares.ExtractTokenUserId(c)
+	UserID := middlewares.ExtractTokenUserId(c)
 	taskInput := TaskRequest{}
 	errBind := c.Bind(&taskInput)
 	if errBind != nil {
@@ -76,13 +90,13 @@ func (h *taskHandler) UpdateTaskById(c echo.Context) error {
 	}
 	//Mapping task reques to core task
 	Core := MapTaskReqToCoreTask(taskInput)
-	err := h.taskService.UpdateById(uint(userID), Core)
+	err = h.taskService.UpdateById(uint(idConv), UserID, Core)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error update data, "+err.Error(), nil))
 	}
 
 	// Get task data for response
-	task, err := h.taskService.GetById(uint(userID))
+	task, err := h.taskService.GetById(uint(idConv), UserID)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "task not found", nil))
 	}
@@ -91,9 +105,14 @@ func (h *taskHandler) UpdateTaskById(c echo.Context) error {
 }
 
 func (h *taskHandler) DeleteTaskById(c echo.Context) error {
+	idParam := c.Param("task_id")
+	idConv, err := strconv.Atoi(idParam)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "user id is not valid", nil))
+	}
 	// Mengambil ID pengguna dari token JWT yang terkait dengan permintaan
 	userID := middlewares.ExtractTokenUserId(c)
-	err := h.taskService.DeleteById(uint(userID))
+	err = h.taskService.DeleteById(uint(idConv), userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error delete data, "+err.Error(), nil))
 	}

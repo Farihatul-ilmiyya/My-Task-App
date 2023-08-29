@@ -1,3 +1,3 @@
-![Alt text][def]
+![my image][def]
 
-[def]: /:D/MYFILE/Bootcamp/ERD-MyTaskAPP.jpg "ERD-MyTaskAPP"
+[def]: /:D/MYFILE/go-workspace/src/task/ERD-MyTaskAPP.jpg "ERD-MyTaskAPP"

@@ -3,6 +3,7 @@ package data
 import (
 	"errors"
 	"mia/my_task_app/features/task"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -18,29 +19,40 @@ func New(database *gorm.DB) task.TaskDataInterface {
 }
 
 // Insert implements task.TaskDataInterface.
-func (r *taskQuery) Insert(input task.CoreTask) (uint, error) {
-	newTask := MapCoreTaskToTask(input)
-
-	//simpan ke db
-	tx := r.db.Create(&newTask)
+func (r *taskQuery) Insert(input task.CoreTask, userID uint) (uint, error) {
+	var dataTask []Task
+	var ProjectID uint
+	tx := r.db.Joins("JOIN projects ON tasks.project_id = projects.id").
+		Where("projects.user_id = ? AND projects.id = ? AND tasks.deleted_at IS NULL", userID, ProjectID).First(&dataTask)
 	if tx.Error != nil {
 		return 0, tx.Error
 	}
 	if tx.RowsAffected == 0 {
-		return 0, errors.New("data not found")
+		return 0, errors.New("task not found")
+	}
+	newTask := MapCoreTaskToTask(input)
+	//simpan ke db
+	tx = r.db.Model(&dataTask).Create(&newTask)
+	if tx.Error != nil {
+		return 0, tx.Error
+	}
+	if tx.RowsAffected == 0 {
+		return 0, errors.New("task not found")
 	}
 	return newTask.ID, nil
 }
 
 // SelectAll implements task.TaskDataInterface.
-func (r *taskQuery) SelectAll() ([]task.CoreTask, error) {
+func (r *taskQuery) SelectAll(userID uint) ([]task.CoreTask, error) {
 	var dataTask []Task
-	tx := r.db.Find(&dataTask)
+	tx := r.db.Joins("JOIN projects ON tasks.project_id = projects.id").
+		Where("projects.user_id = ?", userID).
+		First(&dataTask)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
 	if tx.RowsAffected == 0 {
-		return nil, errors.New("data not found")
+		return nil, errors.New("task not found")
 	}
 	//mapping Task Model to CoreTask
 	coreTaskSlice := ListMapTaskToCoreTask(dataTask)
@@ -48,14 +60,16 @@ func (r *taskQuery) SelectAll() ([]task.CoreTask, error) {
 }
 
 // Select implements task.TaskDataInterface.
-func (r *taskQuery) Select(taskId uint) (task.CoreTask, error) {
+func (r *taskQuery) Select(taskId uint, userID uint) (task.CoreTask, error) {
 	var taskData Task
-	tx := r.db.First(&taskData, taskId)
+	tx := r.db.Joins("JOIN projects ON tasks.project_id = projects.id").
+		Where("tasks.id = ? AND projects.user_id = ?", taskId, userID).
+		First(&taskData)
 	if tx.Error != nil {
 		return task.CoreTask{}, tx.Error
 	}
 	if tx.RowsAffected == 0 {
-		return task.CoreTask{}, errors.New("data not found")
+		return task.CoreTask{}, errors.New("task not found")
 	}
 	//Mapping Task to CorePtask
 	coreTask := MapTaskToCoreTask(taskData)
@@ -63,14 +77,16 @@ func (r *taskQuery) Select(taskId uint) (task.CoreTask, error) {
 }
 
 // Update implements task.TaskDataInterface.
-func (r *taskQuery) Update(taskId uint, taskData task.CoreTask) error {
+func (r *taskQuery) Update(taskId uint, userID uint, taskData task.CoreTask) error {
 	var task Task
-	tx := r.db.First(&task, taskId)
+	tx := r.db.Joins("JOIN projects ON tasks.project_id = projects.id").
+		Where("tasks.id = ? AND projects.user_id = ?", taskId, userID).
+		First(&task)
 	if tx.Error != nil {
 		return tx.Error
 	}
 	if tx.RowsAffected == 0 {
-		return errors.New("data not found")
+		return errors.New("task not found")
 	}
 
 	//Mapping Task to CoreTask
@@ -79,18 +95,31 @@ func (r *taskQuery) Update(taskId uint, taskData task.CoreTask) error {
 	if tx.Error != nil {
 		return errors.New(tx.Error.Error() + " failed to update data")
 	}
+	// Set update the task
+	tx = r.db.Model(&task).Updates(updatedTask)
+	if tx.Error != nil {
+		return tx.Error
+	}
 	return nil
 }
 
 // Delete implements task.TaskDataInterface.
-func (r *taskQuery) Delete(taskId uint) error {
+func (r *taskQuery) Delete(taskId uint, userID uint) error {
 	var task Task
-	tx := r.db.Delete(&task, taskId)
+	tx := r.db.Joins("JOIN projects ON tasks.project_id = projects.id").
+		Where("tasks.id = ? AND projects.user_id = ?", taskId, userID).
+		First(&task)
+
 	if tx.Error != nil {
 		return tx.Error
 	}
 	if tx.RowsAffected == 0 {
-		return errors.New("data not found")
+		return errors.New("task not found")
+	}
+	// Set deleted_at and update the task
+	tx = r.db.Model(&task).Update("deleted_at", time.Now())
+	if tx.Error != nil {
+		return tx.Error
 	}
 	return nil
 }
