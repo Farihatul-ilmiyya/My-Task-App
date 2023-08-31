@@ -12,7 +12,7 @@ type CoreTask struct {
 	DeletedAt        time.Time
 }
 type TaskDataInterface interface {
-	Insert(input CoreTask, userID uint) (uint, error)
+	Insert(input CoreTask, taskId uint) (uint, error)
 	SelectAll(userID uint) ([]CoreTask, error)
 	Select(taskId uint, userID uint) (CoreTask, error)
 	Update(taskId uint, userID uint, taskData CoreTask) error
@@ -20,7 +20,7 @@ type TaskDataInterface interface {
 }
 
 type TaskServiceInterface interface {
-	Create(input CoreTask, userID uint) (uint, error)
+	Create(input CoreTask, userID uint, projectId uint) (uint, error)
 	GetAll(userID uint) ([]CoreTask, error)
 	GetById(taskId uint, userID uint) (CoreTask, error)
 	UpdateById(taskId uint, userID uint, taskData CoreTask) error

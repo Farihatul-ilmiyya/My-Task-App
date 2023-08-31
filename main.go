@@ -15,7 +15,7 @@ func main() {
 	dbMysql := database.InitDBMysql(cfg)
 
 	//call migration
-	// database.InitialMigration(dbMysql)
+	database.InitialMigration(dbMysql)
 
 	//create a new echo instance
 	e := echo.New()

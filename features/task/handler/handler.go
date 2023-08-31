@@ -22,17 +22,22 @@ func New(service task.TaskServiceInterface) *taskHandler {
 
 func (h *taskHandler) CreateTask(c echo.Context) error {
 	NewTask := new(TaskRequest)
-	// Mengambil ID pengguna dari token JWT yang terkait dengan permintaan
-	UserID := middlewares.ExtractTokenUserId(c)
 	//mendapatkan data yang dikirim oleh FE melalui request
 	err := c.Bind(&NewTask)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, helpers.WebResponse(http.StatusBadRequest, "error bind data", nil))
 	}
 
+	// Mengambil ID pengguna dari token JWT yang terkait dengan permintaan
+	userID := middlewares.ExtractTokenUserId(c)
+
+	// Mendapatkan projectID dari permintaan (misalnya dari parameter URL atau data request)
+	projectId := NewTask.ProjectID // Ganti ini sesuai dengan bagaimana Anda mendapatkan projectID
+
 	//mapping dari request to CoreTask
 	input := MapTaskReqToCoreTask(*NewTask)
-	result, err := h.taskService.Create(input, UserID)
+
+	result, err := h.taskService.Create(input, userID, projectId)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, helpers.WebResponse(http.StatusInternalServerError, "error insert data, "+err.Error(), nil))
 	}

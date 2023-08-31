@@ -7,6 +7,7 @@ import (
 )
 
 type ProjectResponse struct {
+	ID          uint      `json:"id"`
 	Title       string    `json:"title"`
 	UserID      uint      `json:"user_id"`
 	Description string    `json:"description"`
@@ -17,6 +18,7 @@ type ProjectResponse struct {
 // Mapping CorePrject to ProjectResponsee
 func MapCoreProjToProjRes(core project.CoreProject) ProjectResponse {
 	return ProjectResponse{
+		ID:          core.ID,
 		Title:       core.Title,
 		UserID:      core.UserID,
 		Description: core.Description,

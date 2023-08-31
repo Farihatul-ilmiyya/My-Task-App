@@ -38,7 +38,7 @@ func InitRouter(db *gorm.DB, e *echo.Echo) {
 	e.DELETE("/projects/:project_id", projectHandlerAPI.DeleteProjectById, middlewares.JWTMiddleware())
 
 	taskRepo := _taskRepo.New(db)
-	taskService := _taskService.New(taskRepo)
+	taskService := _taskService.New(taskRepo, projectRepo)
 	taskHandlerAPI := _taskHandler.New(taskService)
 	e.POST("/tasks", taskHandlerAPI.CreateTask, middlewares.JWTMiddleware())
 	e.GET("/tasks", taskHandlerAPI.GetAllTask, middlewares.JWTMiddleware())

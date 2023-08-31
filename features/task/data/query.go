@@ -21,18 +21,10 @@ func New(database *gorm.DB) task.TaskDataInterface {
 // Insert implements task.TaskDataInterface.
 func (r *taskQuery) Insert(input task.CoreTask, userID uint) (uint, error) {
 	var dataTask []Task
-	var ProjectID uint
-	tx := r.db.Joins("JOIN projects ON tasks.project_id = projects.id").
-		Where("projects.user_id = ? AND projects.id = ? AND tasks.deleted_at IS NULL", userID, ProjectID).First(&dataTask)
-	if tx.Error != nil {
-		return 0, tx.Error
-	}
-	if tx.RowsAffected == 0 {
-		return 0, errors.New("task not found")
-	}
+
 	newTask := MapCoreTaskToTask(input)
 	//simpan ke db
-	tx = r.db.Model(&dataTask).Create(&newTask)
+	tx := r.db.Model(&dataTask).Create(&newTask)
 	if tx.Error != nil {
 		return 0, tx.Error
 	}
