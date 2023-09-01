@@ -1,12 +1,878 @@
-title: My Task APP
-summary: A todo list app.
-description: This is a sample server for a todo list app.
-termsOfService: https://example.com/terms/
-contact:
-  name: API Support
-  url: https://www.example.com/support
-  email: farihatulilmiyya2625@gmail.com
-license:
-  name: Apache 2.0
-  url: https://www.apache.org/licenses/LICENSE-2.0.html
-version: 1.0.0
+openapi: 3.0.3
+
+info:
+  title: My Task APP
+  version: 1.0.0
+  description: My Tas App merupakan aplikasi yang digunakan untuk management task pengguna.
+  contact:
+    name: Developer 
+    email: farihatulilmiyya2625@gmail.com
+
+externalDocs:
+  description: Visit My Task App on GitHub repository for more information.
+  url: https://github.com/ALTA-BE18-Farihatul-Ilmiyya/My-Task-App
+
+servers:
+  # Added by API Auto Mocking Plugin
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/farihatulilmiyya2625/My-Task-APP/1.0.0
+  - description: Production
+    url: https://peterzalai.biz.id
+
+tags:
+  - name: Authentication
+    description: Identifikasi data pengguna
+  - name: Users
+    description: Pengguna aplikasi yang kita bangun (Tim internal)
+  - name: Projects
+    description: Tujuan utama yang terdiri dari beberapa task
+  - name: Tasks
+    description: Tugas-tugas yang harus dilakukan
+ 
+paths:
+  /login:
+    post:
+      tags:
+        - Authentication
+      summary: Login to system
+      description: Endpoint login user to the web-application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/users'
+            examples:
+              example1:
+                summary: Example login user id 1
+                value:
+                  email: "popol@gmail.com"
+                  password: "12345"
+              example2:
+                summary: Example login user id 2
+                value:
+                  email: "tigreal@gmail.com"
+                  password: "12345"
+      responses:
+        '200':
+          $ref: '#/components/responses/Response200Login'
+        '400':
+          $ref: '#/components/responses/Response400Login'
+        '500':
+          $ref: '#/components/responses/Response500'
+
+  /users:
+    post:
+      tags:
+        - Users
+      summary: Create a new user 
+      description: Endpoint create new user to the web
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/users"
+            example:
+              name: "Popol Kupa"
+              email: "popol@gmail.com"
+              password: "12345"
+              phone_number: "08979493169"
+      responses:
+        '201':
+          $ref: '#/components/responses/Response201CreateUser'
+        '400':
+          $ref: '#/components/responses/Response400'
+        '401':
+          $ref: '#/components/responses/Response401Unauthorized'
+        '500':
+          $ref: '#/components/responses/Response500'
+  /users/:{user_id}:
+    get:
+      tags:
+        - Users
+      summary: Get user profile
+      description: Get user information by their ID
+      parameters:
+        - name: user_id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Response200GetUserProfile'
+        '404':
+          $ref: '#/components/responses/Response404'
+        '500':
+          $ref: '#/components/responses/Response500'
+      security:
+        - bearerAuth : []
+
+    put:
+      tags:
+        - Users
+      summary: Update user profile
+      description: Update user information by their ID
+      parameters:
+        - name: user_id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                phone_number:
+                  type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Response200UpdateUser'
+        '400':
+          $ref: '#/components/responses/Response400'
+        '404':
+          $ref: '#/components/responses/Response404'
+        '500':
+          $ref: '#/components/responses/Response500'
+      security:
+        - bearerAuth : []
+
+    delete:
+      tags:
+        - Users
+      summary: Delete user account
+      description: Deactive user information by their ID
+      parameters:
+        - name: user_id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Response200UserDelete'
+        '400':
+          $ref: '#/components/responses/Response400'
+        '401':
+          $ref: '#/components/responses/Response401Unauthorized'
+        '500':
+          $ref: '#/components/responses/Response500'
+      security:
+        - bearerAuth: []
+
+  /projects:
+    post:
+      tags:
+        - Projects
+      summary: Register new project
+      description: Endpoint register new project to the web-application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/projects"
+            example:
+              title: "Project My Task App"
+              description: "My Tas App merupakan aplikasi yang digunakan untuk management task pengguna."
+      responses:
+        '201':
+          $ref: '#/components/responses/Response201CreateProject'
+        '400':
+          $ref: '#/components/responses/Response400'
+        '404':
+          $ref: '#/components/responses/Response404'
+        '500':
+          $ref: '#/components/responses/Response500'
+      security:
+        - bearerAuth: []
+
+    get:
+      tags:
+        - Projects
+      summary: Get list projects
+      description: Get list projects
+      responses:
+        '200':
+          $ref: '#/components/responses/Response200GetProject'
+        '404':
+          $ref: '#/components/responses/Response404'
+        '500':
+          $ref: '#/components/responses/Response500'
+      security:
+        - bearerAuth : []
+
+  /projects/:{project_id}:
+    get:
+      tags:
+        - Projects
+      summary: Get project by project_id
+      description: Get specific project by project_id
+      parameters:
+        - name: project_id
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Response200GetProject'
+        '404':
+          $ref: '#/components/responses/Response404'
+        '500':
+          $ref: '#/components/responses/Response500'
+      security:
+        - bearerAuth : []
+
+    put:
+      tags:
+        - Projects
+      summary: Update project by project_id
+      description: Update specific project by project_id
+      parameters:
+        - name: project_id
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Response200UpdateProject'
+        '400':
+          $ref: '#/components/responses/Response400'
+        '404':
+          $ref: '#/components/responses/Response404'
+        '500':
+          $ref: '#/components/responses/Response500'
+      security:
+        - bearerAuth : []
+
+    delete:
+      tags:
+        - Projects
+      summary: Delete project by project_id
+      description: Delete specific project by project_id
+      parameters:
+        - name: project_id
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Response200ProjectDelete'
+        '404':
+          $ref: '#/components/responses/Response404'
+        '500':
+          $ref: '#/components/responses/Response500'
+      security:
+        - bearerAuth: []
+  /tasks:
+    post:
+      tags:
+        - Tasks
+      summary: Register new task
+      description: Endpoint register new task to the web-application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/tasks"
+            example:
+              title: "membuat crud user"
+              project_id: 1
+      responses:
+        '201':
+          $ref: '#/components/responses/Response201CreateTask'
+        '400':
+          $ref: '#/components/responses/Response400'
+        '404':
+          $ref: '#/components/responses/Response404'
+        '500':
+          $ref: '#/components/responses/Response500'
+      security:
+        - bearerAuth: []
+
+    get:
+      tags:
+        - Tasks
+      summary: Get list tasks
+      description: Get list tasks
+      responses:
+        '200':
+          $ref: '#/components/responses/Response200GetTask'
+        '404':
+          $ref: '#/components/responses/Response404'
+        '500':
+          $ref: '#/components/responses/Response500'
+      security:
+        - bearerAuth : []
+
+  /tasks/:{task_id}:
+    get:
+      tags:
+        - Tasks
+      summary: Get task by task_id
+      description: Get specific task by task_id
+      parameters:
+        - name: task_id
+          in: path
+          description: Task ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Response200GetTask'
+        '404':
+          $ref: '#/components/responses/Response404'
+        '500':
+          $ref: '#/components/responses/Response500'
+      security:
+        - bearerAuth : []
+
+    put:
+      tags:
+        - Tasks
+      summary: Update task by task_id
+      description: Update specific task by task_id
+      parameters:
+        - name: task_id
+          in: path
+          description: Task ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Response200UpdateTask'
+        '400':
+          $ref: '#/components/responses/Response400'
+        '404':
+          $ref: '#/components/responses/Response404'
+        '500':
+          $ref: '#/components/responses/Response500'
+      security:
+        - bearerAuth : []
+
+    delete:
+      tags:
+        - Taskss
+      summary: Delete task by task_id
+      description: Delete specific task by task_id
+      parameters:
+        - name: task_id
+          in: path
+          description: Task ID
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Response200TaskDelete'
+        '404':
+          $ref: '#/components/responses/Response404'
+        '500':
+          $ref: '#/components/responses/Response500'
+      security:
+        - bearerAuth: []
+
+components: 
+  securitySchemes:
+    bearerAuth:           
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  requestBodies:
+
+    RequestLoginUser:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            $ref: '#/components/schemas/users' 
+
+  responses:
+    Response200:
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: "Successful operation"
+    
+    Response201:
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                example: 201
+              message:
+                type: string
+                example: "Successful operation"
+    
+    Response201CreateUser:
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+              message:
+                type: string
+            example: 
+              code: 200
+              message: "Successful created an account"
+              data:
+                id: 1
+                name: "Popol Kupa"
+                email: "popol@gmail.com"
+                
+    Response201CreateProject:
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+              message:
+                type: string
+            example: 
+              code: 200
+              message: "Successful created new project"
+              data:
+                title: "Project My Task App"
+                description: "My Tas App merupakan aplikasi yang digunakan untuk management task pengguna"
+                user_id: 1
+                
+    Response201CreateTask:
+      description: Successful operation
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+              message:
+                type: string
+            example: 
+              code: 200
+              message: "Successful created new project"
+              data:
+                task_id: 1
+                title: "membuat crud user"
+                project_id: 1
+                completion_status: "not complete" 
+                
+    Response200Login:
+      description: Successful login
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+              message:
+                type: string
+              token:
+                type: string
+            example: 
+              code: 200
+              message: "Successful login"
+              data:
+                user_id: 1
+                email: "popol@gmail.com"
+                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBldGVyemFsYWlAZ21haWwuY29tIiwicGFzc3dvcmQiOiJAU2VjcmV0MTIzIn0.BZq48TAx5wci2LH48KW5geslrGR2ybr0-5Wol-HyDkI"
+          examples:
+            Example login user id 1:
+              value:
+                code: 200
+                message: "Successful login"
+                data:
+                  user_id: 1
+                  email: "popol@gmail.com"
+                  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBldGVyemFsYWlAZ21haWwuY29tIiwicGFzc3dvcmQiOiJAU2VjcmV0MTIzIn0.BZq48TAx5wci2LH48KW5geslrGR2ybr0-5Wol-HyDkI"
+            Example login user id 2:
+              value:
+                code: 200
+                message: "Successful login"
+                data:
+                  user_id: 2
+                  email: "tigreal@gmail.com"
+                  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InBldGVyemFsYWlAZ21haWwuY29tIiwicGFzc3dvcmQiOiJAU2VjcmV0MTIzIn0.BZq48TAx5wci2LH48KW5geslrGR2ybr0-5Wol-HyDkI"
+                  
+    Response200GetListProjects:    
+      description: Success get list projects
+      content:
+        application/json:
+          example:
+              code: 200
+              message: "Successful Operation"
+              data:
+                - title: "Project My Task App"
+                  description: "My Tas App merupakan aplikasi yang digunakan untuk management task pengguna"
+                  user_id: 1
+                  created_at: "2023/03/07"
+                - title: "Project Taman"
+                  description: "Memperindah taman dengan menanam beberapa jenis bunga"
+                  user_id: 1
+                  created_at: "2023/03/07"
+                  
+    Response200GetListTasks:    
+      description: Success get list tasks
+      content:
+        application/json:
+          example:
+              code: 200
+              message: "Successful Operation"
+              data:
+                - task_id: 1
+                  title: "membuat crud user"
+                  project_id: 1
+                  completion_status: "not complete"
+                  created_at: "2023/03/07"
+                - task_id: 2
+                  title: "menanam bunga mawar"
+                  project_id: 1
+                  completion_status: "not complete"
+                  created_at: "2023/03/07"
+    Response200GetUserProfile:    
+      description: Success get spesific user data
+      content:
+        application/json:
+          example:
+              code: 200
+              message: "Successful Operation"
+              data:
+                user_id: 1
+                name: "Popol Kupa"
+                email: "popol@gmail.com"
+                phone_number: "08979493169"
+                created_at: "2023/03/07"
+
+    Response200GetProject:    
+      description: Success get specific project data
+      content:
+        application/json:
+          example:
+              code: 200
+              message: "Successful Operation"
+              data:
+                title: "Project My Task App"
+                description: "My Tas App merupakan aplikasi yang digunakan untuk management task pengguna"
+                user_id: 1
+                tasks: 
+                  - project_id: 1
+                    task_id: 1
+                    title : "membuat crud user"
+                    completion_status: "complete"
+                  - project_id: 1
+                    task_id: 2
+                    title : "membuat crud project"
+                    completion_status: "not complete"
+                    
+    Response200GetTask:    
+      description: Success get specific task data
+      content:
+        application/json:
+          example:
+              code: 200
+              message: "Successful Operation"
+              data:
+                title: "Project My Task App"
+                description: "My Tas App merupakan aplikasi yang digunakan untuk management task pengguna"
+                user_id: 1
+                tasks: 
+                  - task_id: 1
+                    title: "membuat crud user"
+                    project_id: 1
+                    completion_status: "not complete"
+                    created_at: "2023/03/07"
+
+    Response200UpdateUser:
+      description: User information updated successfully
+      content:
+        application/json:
+          examples:
+            example update 1:
+              summary: Example update user id 1
+              value:
+                code: 200
+                message: "Successful Operation"
+                data:
+                  name: "Popol"
+                  email: "popol@gmail.com"
+                  phone_number: "08979493169"
+                  created_at: "2023/03/07"
+                  updated_at: "2023/04/07"
+            example update 2:
+              summary: Example update user id 2
+              value:
+                code: 200
+                message: "Successful Operation"
+                data:                
+                  username: "tigreal"
+                  email: "tigreal@gmail.com"
+                  phone_number: "08736236236"
+                  created_at: "2023/03/07"
+                  updated_at: "2023/04/07"
+
+    Response200UpdateProject:
+      description: Project information updated successfully
+      content:
+        application/json:
+          example:
+            code: 200
+            message: "Successful Operation"
+            data:
+              project_id: 1
+              title: "Project My Task App"
+              description: "My Tas App merupakan aplikasi yang digunakan untuk management task pengguna."
+              user_id: 1
+    Response200UpdateTask:
+      description: Project information updated successfully
+      content:
+        application/json:
+          example:
+            code: 200
+            message: "Successful Operation"
+            data:
+              - project_id: 1
+                title : "membuat crud user"
+                completion_status: "complete"
+
+    Response200UserDelete:
+      description: User data deleted successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: "Success Delete Account"
+
+    Response200ProjectDelete:
+      description: Project data deleted successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: "Success Delete Project"
+    Response200TaskDelete:
+      description: Project data deleted successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                example: 200
+              message:
+                type: string
+                example: "Success Delete task"
+    Response400Login:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                example: 400
+              message:
+                type: string
+                example: "Bad request, Incorrect email or password"
+
+    Response400:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                example: 400
+              message:
+                type: string
+                example: "Bad request"
+
+    Response401Unauthorized:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                example: 401
+              message:
+                type: string
+                example: "Unauthorized access."
+
+    Response404:
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                example: 404
+              message:
+                type: string
+                example: "The requested resource was not found"
+
+    Response500:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                example: 500
+              message:
+                type: string
+                example: "Internal server error"
+
+  schemas:
+    users:
+      type: object 
+      properties: 
+        id: 
+          type: string
+          format: uuid 
+        name: 
+          type: string  
+        email: 
+          type: string
+          format: email
+        password: 
+          type: string
+        phone_number:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+
+    projects:
+      type: object
+      properties:
+        project_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
+    
+    tasks:
+      type: object
+      properties:
+        task_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        project_id:
+          type: string
+        completion_status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type: string
+          format: date-time
