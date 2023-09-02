@@ -14,4 +14,4 @@ RUN go mod tidy
 RUN go build -o mytaskapi
 
 # RUN go build -o main .
-CMD ["mytaskapi"]
+CMD ["./mytaskapi"]
