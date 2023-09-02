@@ -31,7 +31,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/mytaskapp-images:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}farihatulilmiyya/mytaskapp-images:latest
       # - 
       #   name: connect to server using SSH
       #   uses: appleboy/ssh-action@v1.0.0
