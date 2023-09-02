@@ -1,11 +1,17 @@
-FROM golang:1.17
+FROM golang:1.20
 
+# membuat direktori folder
 RUN mkdir /app
 
+# set working directory
 WORKDIR /app
 
-ADD . /app
+COPY ./ /app
 
-RUN go build -o main .
+RUN go mod tidy
 
-CMD ["/app/main"]
+# create executable
+RUN go build -o mytaskapi
+
+# RUN go build -o main .
+CMD ["mytaskapi"]

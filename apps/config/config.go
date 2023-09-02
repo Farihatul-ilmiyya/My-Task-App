@@ -8,9 +8,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// var (
-// 	JWT_SECRET = ""
-// )
 
 type AppConfig struct {
 	DB_USERNAME string
