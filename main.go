@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	
 	// logging := helpers.NewLogger()
 	cfg := config.InitConfig()
 	dbMysql := database.InitDBMysql(cfg)
